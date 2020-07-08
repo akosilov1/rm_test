@@ -6,12 +6,10 @@ $app_id = "ffc1d1e1-63a2-4bd9-a458-5fccdc58f384";
 $app_key = "BN52Sj13ygo8ATJLl9QeUsiFadcxhzwI";
 include_once __DIR__."/OpenApiConnector.php";
 use OpenApiConnector as CONNECTOR;
+echo "<pre>";
 $connector = new CONNECTOR($app_id,$app_key); // Создание экземпляра класса
 
-?>
-<pre>
-<?
-print_r($connector->getSystemStatus());
+//print_r($connector->getSystemStatus());
 //$connector->openShift(); // Выполнение открытия смены
 $billArray = [ // Массив с данными чека.
     "command" => [ // Массив с данными команды.

@@ -244,16 +244,14 @@ class OpenApiConnector
                 return false;
         }
         $cURL = curl_init();
-
         if ($isGet) {
             curl_setopt_array(
                 $cURL,
                 [
                     CURLOPT_URL => "https://".self::BASE_URL . $url . "?" . http_build_query($params),
                     CURLOPT_CUSTOMREQUEST => "GET",
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_SSL_VERIFYSTATUS => false,
                     CURLOPT_HTTPHEADER => [
+                        "test: test",
                         "sign: " . $this->getSign($params),
                     ]
                 ]
@@ -264,8 +262,6 @@ class OpenApiConnector
                 [
                     CURLOPT_URL => "https://".self::BASE_URL . $url,
                     CURLOPT_CUSTOMREQUEST => "POST",
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_SSL_VERIFYSTATUS => false,
                     CURLOPT_POSTFIELDS => json_encode($params, JSON_UNESCAPED_UNICODE),
                     CURLOPT_HTTPHEADER => [
                         "Content-Type: application/json; charset=utf-8",
@@ -280,10 +276,14 @@ class OpenApiConnector
         curl_setopt_array(
             $cURL,
             [
+                CURLOPT_VERBOSE => true,
+                CURLOPT_HEADER => true,
+                CURLINFO_HEADER_OUT => true,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_CONNECTTIMEOUT => 10,
             ]
         );
+        print_r(curl_getinfo($cURL));
         $response = curl_exec($cURL);
         var_dump($response);
         return $response;
