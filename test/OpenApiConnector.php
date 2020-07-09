@@ -15,7 +15,7 @@ class OpenApiConnector
      * http://check-dev.business.ru/open-api/v1/ - Тестовый сервис.
      * https://check.business.ru/open-api/v1/ - Stable сервис.
      */
-    const BASE_URL = "check-dev.business.ru/open-api/v1/";
+    const BASE_URL = "check.business.ru/open-api/v1/";
 
     /**
      * @var string STATIC_APP_ID app_id сервиса (заменить своим из интеграции, если не используется внешнее хранение переменной).
@@ -105,16 +105,15 @@ class OpenApiConnector
      */
     public function getToken() //TODO: rename
     {
-        $token = json_decode(
-            $this->sendRequest(
-                self::GET_TOKEN_URL,
-                [
-                    "nonce" => $this->nonce,
-                    "app_id" => $this->appID
-                ]
-            ),
-            true
-        )["token"];
+
+        $t = json_decode($this->sendRequest(
+            self::GET_TOKEN_URL,
+            [
+                "nonce" => $this->nonce,
+                "app_id" => $this->appID
+            ]
+        ),true);
+        $token = $t["token"];
         $this->token = $token;
     }
 
@@ -213,7 +212,8 @@ class OpenApiConnector
             self::GET_SYSTEM_STATUS,
             [
                 "app_id" => $this->getAppID(),
-                "nonce" => $this->nonce
+                "nonce" => $this->nonce,
+                "token" => $this->token,
             ]
         );
     }
@@ -251,7 +251,6 @@ class OpenApiConnector
                     CURLOPT_URL => "https://".self::BASE_URL . $url . "?" . http_build_query($params),
                     CURLOPT_CUSTOMREQUEST => "GET",
                     CURLOPT_HTTPHEADER => [
-                        "test: test",
                         "sign: " . $this->getSign($params),
                     ]
                 ]
@@ -277,13 +276,13 @@ class OpenApiConnector
             $cURL,
             [
                 CURLOPT_VERBOSE => true,
-                CURLOPT_HEADER => true,
-                CURLINFO_HEADER_OUT => true,
+                //CURLOPT_HEADER => true,
+                //CURLINFO_HEADER_OUT => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_CONNECTTIMEOUT => 10,
             ]
         );
-        print_r(curl_getinfo($cURL));
+        //print_r(curl_getinfo($cURL));
         $response = curl_exec($cURL);
         var_dump($response);
         return $response;

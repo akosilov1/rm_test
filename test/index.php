@@ -9,7 +9,7 @@ use OpenApiConnector as CONNECTOR;
 echo "<pre>";
 $connector = new CONNECTOR($app_id,$app_key); // Создание экземпляра класса
 
-//print_r($connector->getSystemStatus());
+print_r(json_decode( $connector->getSystemStatus(), true));
 //$connector->openShift(); // Выполнение открытия смены
 $billArray = [ // Массив с данными чека.
     "command" => [ // Массив с данными команды.
