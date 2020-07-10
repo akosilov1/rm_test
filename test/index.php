@@ -1,20 +1,23 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
+
+
+
 //App ID:
 $app_id = "ffc1d1e1-63a2-4bd9-a458-5fccdc58f384";
 //екретный ключ:
 $app_key = "BN52Sj13ygo8ATJLl9QeUsiFadcxhzwI";
-include_once __DIR__."/OpenApiConnector.php";
+include_once __DIR__."/../local/php_interface/OpenApiConnector.php";
 use OpenApiConnector as CONNECTOR;
 echo "<pre>";
 $connector = new CONNECTOR($app_id,$app_key); // Создание экземпляра класса
 
-print_r(json_decode( $connector->getSystemStatus(), true));
+//print_r(json_decode( $connector->getSystemStatus(), true));
 //$connector->openShift(); // Выполнение открытия смены
 $billArray = [ // Массив с данными чека.
     "command" => [ // Массив с данными команды.
-        "author" => "Тестовый кассир", // (String) Имя кассира (Будет пробито на чеке).
-        "smsEmail54FZ" => "+79173446170", // (String) Телефон или e-mail покупателя.
+        "author" => "Михаил Ефремов", // (String) Имя кассира (Будет пробито на чеке).
+        "smsEmail54FZ" => "+79201013053", // (String) Телефон или e-mail покупателя.
         "c_num" => 1111222333, // (int) Номер чека.
         "payed_cash" => 0.00, // (float) Сумма оплаты наличными (Не более 2-х знаков после точки).
         "payed_cashless" => 1500.10 , // (float) Сумма оплаты безаличным рассчетом (Не более 2-х знаков после точки).
@@ -23,7 +26,7 @@ $billArray = [ // Массив с данными чека.
                 "count" => 2, // (float) Количество товара (Не более 3-х знаков после точки).
                 "price" => 500, // (float) Стоимость товара (Не более 2-х знаков после точки).
                 "sum" => 1000, // (float) Сумма товарной позиции (Не более 2-х знаков после точки).
-                "name" => "Товар 1", // (String) Наименование товара (Будет пробито на чеке).
+                "name" => "ТОвар 1", // (String) Наименование товара (Будет пробито на чеке).
                 "nds_value" => 18, // (int) Значение налога.
                 "nds_not_apply" => false // (bool) Используется ли НДС для товара.
             ],
@@ -38,7 +41,7 @@ $billArray = [ // Массив с данными чека.
         ]
     ]
 ];
-
+echo json_encode($billArray, JSON_UNESCAPED_UNICODE);
 //print_r($connector->printBill($billArray)); // Команда на печать чека прихода.
 die("STOP");
 //$_REQUEST['ORDER_ID'] = 25679;

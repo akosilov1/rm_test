@@ -105,15 +105,12 @@ class OpenApiConnector
      */
     public function getToken() //TODO: rename
     {
-
-        $t = json_decode($this->sendRequest(
+        $token = json_decode($this->sendRequest(
             self::GET_TOKEN_URL,
             [
                 "nonce" => $this->nonce,
                 "app_id" => $this->appID
-            ]
-        ),true);
-        $token = $t["token"];
+            ]),true)["token"];
         $this->token = $token;
     }
 
@@ -228,6 +225,7 @@ class OpenApiConnector
      */
     private function sendRequest($url, $params)
     {
+        echo ">>> TOKEN: ".$this->token."\n";
         ksort($params);
         switch ($url) {
             case self::GET_TOKEN_URL:
@@ -256,6 +254,8 @@ class OpenApiConnector
                 ]
             );
         } else {
+
+            print_r($params);
             curl_setopt_array(
                 $cURL,
                 [
@@ -282,8 +282,9 @@ class OpenApiConnector
                 CURLOPT_CONNECTTIMEOUT => 10,
             ]
         );
-        //print_r(curl_getinfo($cURL));
+
         $response = curl_exec($cURL);
+        print_r(curl_getinfo($cURL));
         var_dump($response);
         return $response;
     }
