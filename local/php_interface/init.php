@@ -1289,9 +1289,26 @@ Class RacoonBill{
     }
     function Prepare($arOrder){
         global $USER;
+        \Bitrix\Main\Loader::includeModule("sale");
         $ar_rez['ORDER'] = $arOrder;
         $rsUser = CUser::GetByID($arOrder['USER_ID']);
         $ar_rez['USER'] = $rsUser->Fetch();
+
+        $r = Bitrix\Sale\Order::Load($arOrder['ID']);
+        $basket = $r->getBasket();
+        $items = $basket->getBasketItems();
+        foreach ($items as $item){
+            $ar_vals = $item->getFieldValues();
+            $ar_rez['ITEMS'][] = [
+                'id' => $ar_vals['ID'],
+                'name' => $ar_vals['NAME'],
+                'count' => $ar_vals['QUANTITY'],
+                'price' => $ar_vals['PRICE'],
+                'nds_value' => $ar_vals['VAT_RATE'] * 100,
+                'nds_not_apply' => $ar_vals['VAT_INCLUDED'] == 'Y',
+                'sum' => $ar_vals['PRICE'] * $ar_vals['QUANTITY']
+            ];
+        }
         $this->PrintFirst($ar_rez);
     }
     function PrintFirst($ar_params){
@@ -1302,7 +1319,8 @@ Class RacoonBill{
                 "c_num" => 1111222333, // (int) Номер чека.
                 "payed_cash" => 0.00, // (float) Сумма оплаты наличными (Не более 2-х знаков после точки).
                 "payed_cashless" => $ar_params['ORDER']['SUM_PAID'] , // (float) Сумма оплаты безаличным рассчетом (Не более 2-х знаков после точки).
-                "goods" => [ // Массив с позициями в чеке.
+                "goods" => $ar_params['ITEMS']
+                /*[ // Массив с позициями в чеке.
                     [
                         "count" => 2, // (float) Количество товара (Не более 3-х знаков после точки).
                         "price" => 500, // (float) Стоимость товара (Не более 2-х знаков после точки).
@@ -1319,7 +1337,7 @@ Class RacoonBill{
                         "nds_value" => 18,
                         "nds_not_apply" => true
                     ]
-                ]
+                ]*/
             ]
         ];
         $this->connector->printBill($billArray); // Команда на печать чека прихода.
