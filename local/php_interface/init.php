@@ -1263,6 +1263,7 @@ function RacoonOnSaleStatusOrder($id, $val){
         ));
         while ($arOrder = $r->fetch()) {
             Debug::writeToFile(print_r($arOrder,true));
+            //if($arOrder['PAY_SYSTEM_ID'] == 4 &&  && $arOrder['PAYED'] == 'Y')
             $bill = new RacoonBill();
             //mode = 4 - Полный расчет Полная оплата
             $bill->Prepare($arOrder, 4)->PrintFirst();
@@ -1282,7 +1283,7 @@ function RacoonOnSalePayOrder($id, $val){
     ));
     while ($arOrder = $r->fetch())
     {
-        Debug::writeToFile("\n\tORDER ".print_r($arOrder, true));
+        //Debug::writeToFile("\n\tORDER ".print_r($arOrder, true));
         // Оплата Сбербанк прошла
         if($arOrder['PAY_SYSTEM_ID'] == 4 && $arOrder['PAYED'] == 'Y' && $arOrder['STATUS_ID'] == 'PP'){
 
