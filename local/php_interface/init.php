@@ -1264,7 +1264,7 @@ function RacoonOnSalePayOrder($id, $val){
         if($arOrder['PAY_SYSTEM_ID'] == 4 && $arOrder['PAYED'] == 'Y' && $arOrder['STATUS_ID'] == 'PP'){
 
             $bill = new RacoonBill();
-            $bill->Prepare($arOrder);
+            $bill->Prepare($arOrder)->PrintFirst();
         }
     }
 
@@ -1279,7 +1279,7 @@ use OpenApiConnector as CONNECTOR;
  * Печать чеков
  */
 Class RacoonBill{
-    private $connector;
+    private $connector, $ar_rez;
     function __construct()
     {   //App ID:
         $app_id = "ffc1d1e1-63a2-4bd9-a458-5fccdc58f384";
@@ -1306,12 +1306,15 @@ Class RacoonBill{
                 'price' => $ar_vals['PRICE'],
                 'nds_value' => $ar_vals['VAT_RATE'] * 100,
                 'nds_not_apply' => $ar_vals['VAT_INCLUDED'] == 'Y',
-                'sum' => $ar_vals['PRICE'] * $ar_vals['QUANTITY']
+                'sum' => $ar_vals['PRICE'] * $ar_vals['QUANTITY'],
+                'payment_mode' => 1
             ];
         }
-        $this->PrintFirst($ar_rez);
+        $this->ar_rez = $ar_rez;
+        return $this;
     }
-    function PrintFirst($ar_params){
+    function PrintFirst(){
+        $ar_params = $this->ar_rez;
         $billArray = [ // Массив с данными чека.
             "command" => [ // Массив с данными команды.
                 "author" => "Михаил Ефремов", // (String) Имя кассира (Будет пробито на чеке).
