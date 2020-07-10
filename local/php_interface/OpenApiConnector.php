@@ -225,7 +225,7 @@ class OpenApiConnector
      */
     private function sendRequest($url, $params)
     {
-        echo ">>> TOKEN: ".$this->token."\n";
+        \Bitrix\Main\Diag\Debug::writeToFile(">>> TOKEN: ".$this->token);
         ksort($params);
         switch ($url) {
             case self::GET_TOKEN_URL:
@@ -255,17 +255,16 @@ class OpenApiConnector
             );
         } else {
 
-            print_r($params);
             curl_setopt_array(
                 $cURL,
                 [
                     CURLOPT_URL => "https://".self::BASE_URL . $url,
                     CURLOPT_CUSTOMREQUEST => "POST",
-                    CURLOPT_POSTFIELDS => json_encode($params, JSON_UNESCAPED_UNICODE),
+                    CURLOPT_POSTFIELDS => json_encode($params),
                     CURLOPT_HTTPHEADER => [
                         "Content-Type: application/json; charset=utf-8",
                         "accept: application/json",
-                        "Content-Length: " . strlen(json_encode($params, JSON_UNESCAPED_UNICODE)),
+                        "Content-Length: " . strlen(json_encode($params)),
                         "sign: " . $this->getSign($params),
                     ]
                 ]
@@ -284,8 +283,9 @@ class OpenApiConnector
         );
 
         $response = curl_exec($cURL);
-        print_r(curl_getinfo($cURL));
-        var_dump($response);
+        //print_r(curl_getinfo($cURL));
+        \Bitrix\Main\Diag\Debug::writeToFile("RESPONSE ".html_entity_decode($response));
+
         return $response;
     }
 

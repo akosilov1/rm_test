@@ -8,15 +8,19 @@ $SERVER_PORT = 80;
 $_SERVER["SERVER_PORT"] = $SERVER_PORT;
 $_SERVER["HTTP_HOST"] = $HTTP_HOST;
 */
-
+include_once __DIR__."/OpenApiConnector.php";
+use OpenApiConnector as CONNECTOR;
 // Конфиг
 class rm_conf {
 	const OPT_USER_GROUPS = array(10,11,12,14);			// ID групп [оптовых] пользователей, для которых нужно выводить розничные цены
 }
 
+
 use Bitrix\Main\Diag\Debug,
     Bitrix\Main\Loader,
     Bitrix\Main\EventManager;
+
+
 
 //log
 function customLog($message)
@@ -1247,6 +1251,25 @@ if (!defined('BX_AGENTS_LOG_FUNCTION')) {
 
 }
 
+// Изменение статуса заказа
+AddEventHandler("sale", "OnSaleStatusOrder", "RacoonOnSaleStatusOrder");
+function RacoonOnSaleStatusOrder($id, $val){
+    Debug::writeToFile("RacoonOnSaleStatusOrder() Start >>> ID ".$id." VAL ".$val);
+    \Bitrix\Main\Loader::includeModule("sale");
+    if($val == 'F'){ // Заказ завершен
+        $r = Bitrix\Sale\Order::getList(array(
+            'filter' => ['ID' => $id],
+            'select' => ['*'],
+        ));
+        while ($arOrder = $r->fetch()) {
+            Debug::writeToFile(print_r($arOrder,true));
+            $bill = new RacoonBill();
+            //mode = 4 - Полный расчет Полная оплата
+            $bill->Prepare($arOrder, 4)->PrintFirst();
+        }
+    }
+    Debug::writeToFile(">>> RacoonOnSaleStatusOrder() End");
+}
 // Оплата заказа произведена
 AddEventHandler("sale", "OnSalePayOrder", "RacoonOnSalePayOrder");
 function RacoonOnSalePayOrder($id, $val){
@@ -1271,8 +1294,7 @@ function RacoonOnSalePayOrder($id, $val){
     Debug::writeToFile("<<< RacoonOnSalePayOrder() End");
 }
 
-include_once __DIR__."OpenApiConnector.php";
-use OpenApiConnector as CONNECTOR;
+
 
 /**
  * Class RacoonBill
@@ -1287,13 +1309,13 @@ Class RacoonBill{
         $app_key = "BN52Sj13ygo8ATJLl9QeUsiFadcxhzwI";
         $this->connector = new CONNECTOR($app_id,$app_key); // Создание экземпляра класса
     }
-    function Prepare($arOrder){
+    function Prepare($arOrder, $mode = 1){
+        Debug::writeToFile("RacoonBill->Prepare() ".print_r($arOrder, true));
         global $USER;
         \Bitrix\Main\Loader::includeModule("sale");
         $ar_rez['ORDER'] = $arOrder;
         $rsUser = CUser::GetByID($arOrder['USER_ID']);
         $ar_rez['USER'] = $rsUser->Fetch();
-
         $r = Bitrix\Sale\Order::Load($arOrder['ID']);
         $basket = $r->getBasket();
         $items = $basket->getBasketItems();
@@ -1307,21 +1329,26 @@ Class RacoonBill{
                 'nds_value' => $ar_vals['VAT_RATE'] * 100,
                 'nds_not_apply' => $ar_vals['VAT_INCLUDED'] == 'Y',
                 'sum' => $ar_vals['PRICE'] * $ar_vals['QUANTITY'],
-                'payment_mode' => 1
+                'item_type' => 1,
+                'payment_mode' => $mode
+                // 1 - Предоплата 100%.
+                // 4 - Полный расчет Полная оплата
             ];
         }
+
         $this->ar_rez = $ar_rez;
         return $this;
     }
     function PrintFirst(){
         $ar_params = $this->ar_rez;
+        Debug::writeToFile("PrintFirst Start rez:".print_r($this->ar_rez, true));
         $billArray = [ // Массив с данными чека.
             "command" => [ // Массив с данными команды.
                 "author" => "Михаил Ефремов", // (String) Имя кассира (Будет пробито на чеке).
                 "smsEmail54FZ" => $ar_params['USER']['EMAIL'], // (String) Телефон или e-mail покупателя.
                 "c_num" => 1111222333, // (int) Номер чека.
                 "payed_cash" => 0.00, // (float) Сумма оплаты наличными (Не более 2-х знаков после точки).
-                "payed_cashless" => $ar_params['ORDER']['SUM_PAID'] , // (float) Сумма оплаты безаличным рассчетом (Не более 2-х знаков после точки).
+                "payed_cashless" => $ar_params['ORDER']['PRICE'],//['SUM_PAID'] , // (float) Сумма оплаты безаличным рассчетом (Не более 2-х знаков после точки).
                 "goods" => $ar_params['ITEMS']
                 /*[ // Массив с позициями в чеке.
                     [
