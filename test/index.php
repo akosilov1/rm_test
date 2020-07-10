@@ -1,8 +1,27 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
-
-
-
+echo "<pre>";
+Bitrix\Main\Loader::includeModule("sale");
+Bitrix\Main\Loader::includeModule("iblock");
+$r = Bitrix\Sale\Order::Load(27481);
+$basket = $r->getBasket();
+/*print_r($basket);
+die("STOP");*/
+//echo "Basket ID:".$basket->get;
+//$items = $basket->getBasketItems();
+foreach ($basket as $item_){
+    print_r($item = $item_->getFieldValues());
+    $rez[] = [
+        //'ID' => $item->getField['ID'],
+        'NAME' => $item['NAME'],
+        'QUANTITY' => $item['QUANTITY'],
+        'PRICE' => $item['PRICE'],
+        'VAT_RATE' => $item['VAT_RATE'],
+        'VAT_INCLUDED' => $item['VAT_INCLUDED'],
+    ];
+}
+print_r($rez);
+die("STOP");
 //App ID:
 $app_id = "ffc1d1e1-63a2-4bd9-a458-5fccdc58f384";
 //екретный ключ:
