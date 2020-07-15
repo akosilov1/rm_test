@@ -1310,7 +1310,42 @@ Class RacoonBill{
         $app_key = "BN52Sj13ygo8ATJLl9QeUsiFadcxhzwI";
         $this->connector = new CONNECTOR($app_id,$app_key); // Создание экземпляра класса
     }
+
+    /**
+     * Информация по списанию бонусных баллов
+     * @param $order_id int ID заказа
+     * @return array
+     */
+    function GetBonuses($order_id){
+        $b_rez = CIBlockElement::GetList([],
+            [
+                'IBLOCK_ID' => 37,
+                'PROPERTY_ORDER_ID' => $order_id,
+                'PROPERTY_OPERATION_TYPE_VALUE' => 'Списание по заказу'
+            ],false,false,[
+                'ID',
+                'NAME',
+                'IBLOCK_ID',
+                'PROPERTY_OPERATION_SUM'
+            ]);
+        if($b_rez->SelectedRowsCount() > 0){
+            $ar_rez = $b_rez->Fetch();
+            $rez = [$ar_rez['NAME'], $ar_rez['PROPERTY_OPERATION_SUM_VALUE']];
+
+        }
+
+        return $rez;
+    }
+
+    /**
+     * Подготовка данных для отправки
+     * @param $arOrder array Информация о заказе
+     * @param int $mode 1 - предоплата 100%, 4 - Полный рассчет
+     * @return $this
+     */
     function Prepare($arOrder, $mode = 1){
+        if($mode == 1)
+            $this->GetBonuses($arOrder['ID']);
         Debug::writeToFile("RacoonBill->Prepare() ".print_r($arOrder, true));
         global $USER;
         \Bitrix\Main\Loader::includeModule("sale");
