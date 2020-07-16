@@ -3,6 +3,44 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.ph
 echo "<pre>";
 Bitrix\Main\Loader::includeModule("sale");
 Bitrix\Main\Loader::includeModule("iblock");
+
+/*$arProps = \Bitrix\Iblock\PropertyTable::getList(array(
+        'select' => array('*'),
+        'filter' => array('IBLOCK_ID' => 37)
+    ))->fetchAll();
+print_r($arProps);*/
+/**
+ * OPERATION_TYPE
+ *      MINUS_FROM_ORDER - Списание по заказу
+ *      ADD_FROM_ORDER - Начисление по заказу
+ * OPERATION_SUM - Сумма операции
+ * ORDER_ID - Номер заказа
+ * BALLANCE
+ * BALLANCE_AFTER
+ */
+//$db_rez = $DB->Query("SELECT * FROM b_iblock_element_property WHERE IBLOCK_PROPERTY_ID = 651 AND VALUE = 28157");
+//print_r($db_rez->Fetch());
+print_r(
+    $rez = CIBlockElement::GetList([],
+        [
+            'IBLOCK_ID' => 37,
+            'PROPERTY_ORDER_ID' => 28157,
+            'PROPERTY_OPERATION_TYPE_VALUE' => 'Списание по заказу'
+        ],false,false,[
+            'ID',
+            'NAME',
+            'IBLOCK_ID',
+            'PROPERTY_OPERATION_SUM'
+        ])->Fetch()
+);
+die("STOP");
+$db_props = CIBlockElement::GetProperty($rez['IBLOCK_ID'],$rez['ID']);
+while($ar_prop = $db_props->Fetch()){
+    $ar_props[] = $ar_prop;
+}
+print_r($ar_props);
+die("STOP");
+//
 $r = Bitrix\Sale\Order::Load(27481);
 $basket = $r->getBasket();
 /*print_r($basket);
